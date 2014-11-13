@@ -2,7 +2,6 @@ package cssom
 
 import (
 	"github.com/gorilla/css/scanner"
-	"log"
 	"strings"
 )
 
@@ -41,66 +40,78 @@ func Parse(input string) *CSSStyleSheet {
 
 	for {
 		token := s.Next()
-		//log.Println(token)
-
 		if token.Type == scanner.TokenEOF || token.Type == scanner.TokenError {
 			break
 		}
 		switch token.Type {
 		case scanner.TokenIdent:
+			println("scanner.TokenIdent:" + token.Value)
+
 			if context.State == STATE_NONE || context.State == STATE_SELECTOR {
 				context.State = STATE_SELECTOR
-				context.NowSelectorText += token.Value
+				context.NowSelectorText += strings.Trim(token.Value, " ")
 			}
 
 			if context.State == STATE_DECLARE_BLOCK {
-				log.Println("NowProperty:" + token.Value)
-
 				if token.Value == "important" {
 					context.NowImportant = 1
 				} else {
-					context.NowProperty += token.Value
+
+					if context.NowValue != "" {
+						csd := &CSSStyleDeclaration{
+							Value: strings.Trim(context.NowValue, " "),
+
+							Important: context.NowImportant,
+						}
+
+						context.CurrentRule.Style.Styles[context.NowProperty] = csd
+
+						context.NowProperty = ""
+						context.NowValue = ""
+						context.NowImportant = 0
+					}
+
+					context.NowProperty = strings.Trim(token.Value, " \t\n")
 				}
 
 			}
 
 		case scanner.TokenS:
+			println("scanner.TokenS:" + token.Value)
 			if context.State == STATE_SELECTOR {
 				context.NowSelectorText += token.Value
 			}
 
 			if context.State == STATE_DECLARE_BLOCK {
-				context.NowProperty += token.Value
+				context.NowProperty += strings.Trim(token.Value, " \t\n")
 			}
 
 		case scanner.TokenChar:
+			if string(':') == token.Value {
+				break
+			}
+			println("scanner.TokenChar:" + token.Value)
 
 			if string('{') == token.Value {
 				context.State = STATE_DECLARE_BLOCK
 				context.CurrentRule = NewStyleRule()
-				context.CurrentRule.Style.SelectorText = context.NowSelectorText
-				log.Println(context.CurrentRule.Style.SelectorText + "{")
+				context.CurrentRule.Style.SelectorText = strings.Trim(context.NowSelectorText, " ")
+
 			} else if string('}') == token.Value {
-				context.State = STATE_NONE
-
-				log.Println(strings.Trim(context.NowProperty, " "))
-				log.Println(context.NowImportant)
-				log.Println(strings.Trim(context.NowValue, " "))
-
-				crl := css.GetCSSRuleList()
-
-				csr := NewStyleRule()
-				csr.Style.SelectorText = strings.Trim(context.NowSelectorText, " ")
-
 				csd := &CSSStyleDeclaration{
 					Value:     strings.Trim(context.NowValue, " "),
 					Important: context.NowImportant,
 				}
+				context.CurrentRule.Style.Styles[strings.Trim(context.NowProperty, " ")] = csd
+				css.CssRuleList = append(css.CssRuleList, context.CurrentRule)
 
-				csr.Style.Styles[strings.Trim(context.NowProperty, " ")] = csd
-				css.CssRuleList = append(crl, csr)
+				context.NowSelectorText = ""
+				context.NowProperty = ""
+				context.NowValue = ""
+				context.NowImportant = 0
 
-				log.Println("}")
+				context.State = STATE_NONE
+			} else if context.State == STATE_DECLARE_BLOCK {
 
 			} else {
 				if context.State == STATE_SELECTOR {
@@ -108,14 +119,13 @@ func Parse(input string) *CSSStyleSheet {
 				}
 			}
 		case scanner.TokenPercentage:
+
+			println("scanner.TokenPercentage:" + token.Value)
 			if context.State == STATE_DECLARE_BLOCK {
-				context.NowValue = token.Value
+				context.NowValue = strings.Trim(token.Value, " ")
+
 			}
 		}
-
-		//css.Print()
-
-		//log.Println(rulelist[0].CssType)
 	}
 	return css
 }

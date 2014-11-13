@@ -51,22 +51,19 @@ func (s *CSSStyleSheet) GetCSSRuleList() []*CSSRule {
 	return s.CssRuleList
 }
 
+func (rcv *CSSStyleRule) Print() {
+	fmt.Printf("SelectorText:%s\n", rcv.SelectorText)
+	for k, v := range rcv.Styles {
+		fmt.Printf("Property:%s Value:%s important:%d\n", k, v.Value, v.Important)
+	}
+}
+
 func (s *CSSStyleSheet) Print() {
 	for _, cr := range s.GetCSSRuleList() {
 		fmt.Printf("type:%d\n", STYLE_RULE)
 
 		if cr.Type == STYLE_RULE {
-			Style := cr.Style
-
-			fmt.Printf("SelectorText:%s\n", Style.SelectorText)
-
-			for k, v := range Style.Styles {
-				fmt.Printf("Property:%s Value:%s important:%d\n", k, v.Value, v.Important)
-
-			}
-
+			cr.Style.Print()
 		}
-
 	}
-
 }
