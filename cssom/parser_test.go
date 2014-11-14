@@ -10,7 +10,7 @@ func CSSStyleDeclarationTest(t *testing.T, csd map[string]*CSSStyleDeclaration, 
 }
 
 func Test_WithoutImpotant(t *testing.T) {
-	css := Parse("div .a { font-size: 150%}")
+	css := Parse(`div .a { font-size: 150%;}`)
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -20,10 +20,11 @@ func Test_WithoutImpotant(t *testing.T) {
 	if v.Important != 0 {
 		t.Errorf("v.Important = %d , want 1 .", v.Important)
 	}
+
 }
 
 func Test_WithImpotant(t *testing.T) {
-	css := Parse("div .a { font-size: 150% !important}")
+	css := Parse("div .a { font-size: 150% !important;}")
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -51,8 +52,8 @@ func Test_WithImpotant(t *testing.T) {
 
 func Test_MultipleDeclarations(t *testing.T) {
 	css := Parse(`div .a {
-				font-size1: 150%
-				font-size2: 250%
+				font-size1: 150%;
+				font-size2: 250%;
 			}`)
 	css.Print()
 
@@ -90,10 +91,10 @@ func Test_MultipleDeclarations(t *testing.T) {
 
 func Test_MultipleSelectors(t *testing.T) {
 	css := Parse(`div .a {
-				font-size_a: 150%
+				font-size_a: 150%;
 			}
 			p .b {
-				font-size_b1: 250%
+				font-size_b1: 250%;
 			}
 			`)
 	crl := css.CssRuleList
@@ -121,7 +122,7 @@ func Test_MultipleSelectors(t *testing.T) {
 }
 
 func Test_ValuePx(t *testing.T) {
-	css := Parse("div .a { font-size: 45px}")
+	css := Parse("div .a { font-size: 45px;}")
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -139,7 +140,7 @@ func Test_ValuePx(t *testing.T) {
 }
 
 func Test_ValueEm(t *testing.T) {
-	css := Parse("div .a { a: 45em}")
+	css := Parse("div .a { a: 45em;}")
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -158,7 +159,7 @@ func Test_ValueEm(t *testing.T) {
 }
 
 func Test_ValueRRGGBB(t *testing.T) {
-	css := Parse("div .a { a: #123456}")
+	css := Parse("div .a { a: #123456;}")
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -177,7 +178,7 @@ func Test_ValueRRGGBB(t *testing.T) {
 }
 
 func Test_ValueNumber(t *testing.T) {
-	css := Parse("div .a { a: 456}")
+	css := Parse("div .a { a: 456;}")
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -195,7 +196,7 @@ func Test_ValueNumber(t *testing.T) {
 }
 
 func Test_ValueInherit(t *testing.T) {
-	css := Parse("div .a { a: inherit}")
+	css := Parse("div .a { a: inherit;}")
 
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -213,9 +214,8 @@ func Test_ValueInherit(t *testing.T) {
 }
 
 func Test_ValueRGBFunction(t *testing.T) {
-	css := Parse(`div .a { 
-					a: rgb(1,2,3)
-					font-size: 150% !important
+	css := Parse(`div .a {
+					a: rgb(1,2,3);
 		 }`)
 	crl := css.CssRuleList
 	cr := crl[0]
@@ -227,6 +227,46 @@ func Test_ValueRGBFunction(t *testing.T) {
 	csd := csr.Styles
 	v := csd["a"]
 	if v.Value != "rgb(1,2,3)" {
+		t.Errorf("v.Value = %s , want rgb(1,2,3) .", v.Value)
+	}
+
+}
+
+func Test_ValueString(t *testing.T) {
+	css := Parse(`div .a { text-align: center; }`)
+
+	css.Print()
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+	csd := csr.Styles
+	v := csd["text-align"]
+	if v.Value != "center" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
+
+}
+
+func Test_Comment(t *testing.T) {
+	css := Parse(`div .a { <-- text-align: center; -->}`)
+
+	css.Print()
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+	csd := csr.Styles
+	v := csd["text-align"]
+	if v.Value != "center" {
 		t.Errorf("v.Value = %s , want 45px .", v.Value)
 	}
 

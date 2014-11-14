@@ -50,7 +50,6 @@ func Parse(input string) *CSSStyleSheet {
 			println("scanner.TokenString:" + token.Value)
 		case scanner.TokenURI:
 			println("scanner.TokenURI:" + token.Value)
-
 		case scanner.TokenUnicodeRange:
 			println("scanner.TokenUnicodeRange:" + token.Value)
 		case scanner.TokenCDO:
@@ -59,37 +58,29 @@ func Parse(input string) *CSSStyleSheet {
 			println("scanner.TokenCDC:" + token.Value)
 		case scanner.TokenComment:
 			println("scanner.TokenComment:" + token.Value)
-
 		case scanner.TokenIdent:
 			println("scanner.TokenIdent:" + token.Value)
 
 			if context.State == STATE_NONE || context.State == STATE_SELECTOR {
+
 				context.State = STATE_SELECTOR
 				context.NowSelectorText += strings.Trim(token.Value, " ")
+				break
 			}
 
 			if context.State == STATE_DECLARE_BLOCK {
+				context.State = STATE_PROPERTY
+				context.NowProperty = strings.Trim(token.Value, " \t\n")
+				break
+			}
+
+			if context.State == STATE_VALUE {
 				if token.Value == "important" {
 					context.NowImportant = 1
-				} else if token.Value == "inherit" {
-					context.NowValue = token.Value
 				} else {
-					if context.NowValue != "" {
-						csd := &CSSStyleDeclaration{
-							Value: strings.Trim(context.NowValue, " "),
-
-							Important: context.NowImportant,
-						}
-
-						context.CurrentRule.Style.Styles[context.NowProperty] = csd
-
-						context.NowProperty = ""
-						context.NowValue = ""
-						context.NowImportant = 0
-					}
-
-					context.NowProperty = strings.Trim(token.Value, " \t\n")
+					context.NowValue = token.Value
 				}
+				break
 			}
 
 		case scanner.TokenS:
@@ -98,66 +89,98 @@ func Parse(input string) *CSSStyleSheet {
 				context.NowSelectorText += token.Value
 			}
 
-			if context.State == STATE_DECLARE_BLOCK {
-				context.NowProperty += strings.Trim(token.Value, " \t\n")
-			}
-
 		case scanner.TokenChar:
-			if string(':') == token.Value {
-				break
-			}
-			if string('!') == token.Value {
-				break
-			}
 			println("scanner.TokenChar:" + token.Value)
 
-			if string('{') == token.Value {
-				context.State = STATE_DECLARE_BLOCK
-				context.CurrentRule = NewStyleRule()
-				context.CurrentRule.Style.SelectorText = strings.Trim(context.NowSelectorText, " ")
+			if context.State == STATE_SELECTOR {
+				if string('{') == token.Value {
 
-			} else if string('}') == token.Value {
-				csd := &CSSStyleDeclaration{
-					Value:     strings.Trim(context.NowValue, " "),
-					Important: context.NowImportant,
-				}
-				context.CurrentRule.Style.Styles[strings.Trim(context.NowProperty, " ")] = csd
-				css.CssRuleList = append(css.CssRuleList, context.CurrentRule)
+					context.State = STATE_DECLARE_BLOCK
 
-				context.NowSelectorText = ""
-				context.NowProperty = ""
-				context.NowValue = ""
-				context.NowImportant = 0
-
-				context.State = STATE_NONE
-			} else if context.State == STATE_DECLARE_BLOCK {
-				context.NowValue += token.Value
-			} else {
-				if context.State == STATE_SELECTOR {
+					context.CurrentRule = NewStyleRule()
+					context.CurrentRule.Style.SelectorText = strings.Trim(context.NowSelectorText, " ")
+					break
+				} else {
 					context.NowSelectorText += token.Value
 				}
+				break
 			}
-		case scanner.TokenPercentage:
-			fallthrough
-		case scanner.TokenDimension:
-			fallthrough
-		case scanner.TokenHash:
-			fallthrough
-		case scanner.TokenNumber:
-			fallthrough
-		case scanner.TokenFunction:
-			fallthrough
-		case scanner.TokenIncludes:
-			fallthrough
-		case scanner.TokenDashMatch:
-			fallthrough
-		case scanner.TokenPrefixMatch:
-			fallthrough
-		case scanner.TokenSuffixMatch:
-			fallthrough
-		case scanner.TokenSubstringMatch:
+
+			if context.State == STATE_PROPERTY {
+				if token.Value == ":" {
+					context.State = STATE_VALUE
+				}
+				break
+			}
 
 			if context.State == STATE_DECLARE_BLOCK {
+				if token.Value == "}" {
+					css.CssRuleList = append(css.CssRuleList, context.CurrentRule)
+
+					context.NowSelectorText = ""
+					context.NowProperty = ""
+					context.NowValue = ""
+					context.NowImportant = 0
+
+					context.State = STATE_NONE
+
+				}
+				break
+			}
+
+			if context.State == STATE_VALUE {
+				if token.Value == ";" {
+					csd := &CSSStyleDeclaration{
+						Value:     strings.Trim(context.NowValue, " "),
+						Important: context.NowImportant,
+					}
+
+					context.CurrentRule.Style.Styles[context.NowProperty] = csd
+
+					context.NowProperty = ""
+					context.NowValue = ""
+					context.NowImportant = 0
+
+					context.State = STATE_DECLARE_BLOCK
+				} else {
+					if token.Value != "!" {
+						context.NowValue += token.Value
+					}
+
+				}
+				break
+
+			}
+		case scanner.TokenPercentage:
+			println("scanner.TokenPercentage:" + token.Value)
+			fallthrough
+		case scanner.TokenDimension:
+			println("scanner.TokenDimension:" + token.Value)
+			fallthrough
+		case scanner.TokenHash:
+			println("scanner.TokenHash:" + token.Value)
+			fallthrough
+		case scanner.TokenNumber:
+			println("scanner.TokenNumber:" + token.Value)
+			fallthrough
+		case scanner.TokenFunction:
+			println("scanner.TokenFunction:" + token.Value)
+			fallthrough
+		case scanner.TokenIncludes:
+			println("scanner.TokenIncludes:" + token.Value)
+			fallthrough
+		case scanner.TokenDashMatch:
+			println("scanner.TokenDashMatch:" + token.Value)
+			fallthrough
+		case scanner.TokenPrefixMatch:
+			println("scanner.TokenPrefixMatch:" + token.Value)
+			fallthrough
+		case scanner.TokenSuffixMatch:
+			println("scanner.TokenSuffixMatch:" + token.Value)
+			fallthrough
+		case scanner.TokenSubstringMatch:
+			println("scanner.TokenSubstringMatch:" + token.Value)
+			if context.State == STATE_VALUE {
 				context.NowValue += strings.Trim(token.Value, " ")
 
 			}
