@@ -86,7 +86,6 @@ func Test_MultipleDeclarations(t *testing.T) {
 	if v.Important != 0 {
 		t.Errorf("v.Important = %d , want 0 .", v.Important)
 	}
-
 }
 
 func Test_MultipleSelectors(t *testing.T) {
@@ -121,8 +120,114 @@ func Test_MultipleSelectors(t *testing.T) {
 	}
 }
 
-/*
-func Test_Import(t *testing.T) {
-	Parse("@import url('common.css');")
+func Test_ValuePx(t *testing.T) {
+	css := Parse("div .a { font-size: 45px}")
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+
+	csr := cr.Style
+	csd := csr.Styles
+	v := csd["font-size"]
+	if v.Value != "45px" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
 }
-*/
+
+func Test_ValueEm(t *testing.T) {
+	css := Parse("div .a { a: 45em}")
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+
+	csd := csr.Styles
+	v := csd["a"]
+	if v.Value != "45em" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
+
+}
+
+func Test_ValueRRGGBB(t *testing.T) {
+	css := Parse("div .a { a: #123456}")
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+
+	csd := csr.Styles
+	v := csd["a"]
+	if v.Value != "#123456" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
+
+}
+
+func Test_ValueNumber(t *testing.T) {
+	css := Parse("div .a { a: 456}")
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+
+	csd := csr.Styles
+	v := csd["a"]
+	if v.Value != "456" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
+}
+
+func Test_ValueInherit(t *testing.T) {
+	css := Parse("div .a { a: inherit}")
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+
+	csd := csr.Styles
+	v := csd["a"]
+	if v.Value != "inherit" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
+}
+
+func Test_ValueRGBFunction(t *testing.T) {
+	css := Parse(`div .a { 
+					a: rgb(1,2,3)
+					font-size: 150% !important
+		 }`)
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+	csd := csr.Styles
+	v := csd["a"]
+	if v.Value != "rgb(1,2,3)" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
+
+}

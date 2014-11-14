@@ -44,6 +44,22 @@ func Parse(input string) *CSSStyleSheet {
 			break
 		}
 		switch token.Type {
+		case scanner.TokenAtKeyword:
+			println("scanner.TokenAtKeyword:" + token.Value)
+		case scanner.TokenString:
+			println("scanner.TokenString:" + token.Value)
+		case scanner.TokenURI:
+			println("scanner.TokenURI:" + token.Value)
+
+		case scanner.TokenUnicodeRange:
+			println("scanner.TokenUnicodeRange:" + token.Value)
+		case scanner.TokenCDO:
+			println("scanner.TokenCDO:" + token.Value)
+		case scanner.TokenCDC:
+			println("scanner.TokenCDC:" + token.Value)
+		case scanner.TokenComment:
+			println("scanner.TokenComment:" + token.Value)
+
 		case scanner.TokenIdent:
 			println("scanner.TokenIdent:" + token.Value)
 
@@ -55,8 +71,9 @@ func Parse(input string) *CSSStyleSheet {
 			if context.State == STATE_DECLARE_BLOCK {
 				if token.Value == "important" {
 					context.NowImportant = 1
+				} else if token.Value == "inherit" {
+					context.NowValue = token.Value
 				} else {
-
 					if context.NowValue != "" {
 						csd := &CSSStyleDeclaration{
 							Value: strings.Trim(context.NowValue, " "),
@@ -73,7 +90,6 @@ func Parse(input string) *CSSStyleSheet {
 
 					context.NowProperty = strings.Trim(token.Value, " \t\n")
 				}
-
 			}
 
 		case scanner.TokenS:
@@ -88,6 +104,9 @@ func Parse(input string) *CSSStyleSheet {
 
 		case scanner.TokenChar:
 			if string(':') == token.Value {
+				break
+			}
+			if string('!') == token.Value {
 				break
 			}
 			println("scanner.TokenChar:" + token.Value)
@@ -112,17 +131,34 @@ func Parse(input string) *CSSStyleSheet {
 
 				context.State = STATE_NONE
 			} else if context.State == STATE_DECLARE_BLOCK {
-
+				context.NowValue += token.Value
 			} else {
 				if context.State == STATE_SELECTOR {
 					context.NowSelectorText += token.Value
 				}
 			}
 		case scanner.TokenPercentage:
+			fallthrough
+		case scanner.TokenDimension:
+			fallthrough
+		case scanner.TokenHash:
+			fallthrough
+		case scanner.TokenNumber:
+			fallthrough
+		case scanner.TokenFunction:
+			fallthrough
+		case scanner.TokenIncludes:
+			fallthrough
+		case scanner.TokenDashMatch:
+			fallthrough
+		case scanner.TokenPrefixMatch:
+			fallthrough
+		case scanner.TokenSuffixMatch:
+			fallthrough
+		case scanner.TokenSubstringMatch:
 
-			println("scanner.TokenPercentage:" + token.Value)
 			if context.State == STATE_DECLARE_BLOCK {
-				context.NowValue = strings.Trim(token.Value, " ")
+				context.NowValue += strings.Trim(token.Value, " ")
 
 			}
 		}
