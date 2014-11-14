@@ -1,7 +1,7 @@
-package main
+package cssom
 
 import (
-	"github.com/masayukioguni/gocssom/cssom"
+	"github.com/masayukioguni/gocssom"
 )
 
 func main() {
