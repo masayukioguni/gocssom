@@ -16,5 +16,5 @@ matrix:
     - go: tip
 
 script:
- - go test -v ./...
+ - go test -v ./cssom
  - $HOME/gopath/bin/goveralls -repotoken bLpI4TAkG1HaGozQCjeuFAbssE0zkD3QZ
