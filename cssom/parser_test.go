@@ -252,8 +252,8 @@ func Test_ValueString(t *testing.T) {
 
 }
 
-func Test_Comment(t *testing.T) {
-	css := Parse(`div .a { <-- text-align: center; -->}`)
+func Test_Hash(t *testing.T) {
+	css := Parse(`#div { key: value;}`)
 
 	css.Print()
 
@@ -265,9 +265,27 @@ func Test_Comment(t *testing.T) {
 		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
 	}
 	csd := csr.Styles
-	v := csd["text-align"]
-	if v.Value != "center" {
+	v := csd["key"]
+	if v.Value != "value" {
 		t.Errorf("v.Value = %s , want 45px .", v.Value)
 	}
+}
 
+func Test_Class(t *testing.T) {
+	css := Parse(`.div { key: value;}`)
+
+	css.Print()
+
+	crl := css.CssRuleList
+	cr := crl[0]
+
+	csr := cr.Style
+	if cr.Type != STYLE_RULE {
+		t.Errorf("cr.Type = %d , want div 1 .", cr.Type)
+	}
+	csd := csr.Styles
+	v := csd["key"]
+	if v.Value != "value" {
+		t.Errorf("v.Value = %s , want 45px .", v.Value)
+	}
 }

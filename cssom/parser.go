@@ -58,6 +58,7 @@ func Parse(input string) *CSSStyleSheet {
 			println("scanner.TokenCDC:" + token.Value)
 		case scanner.TokenComment:
 			println("scanner.TokenComment:" + token.Value)
+
 		case scanner.TokenIdent:
 			println("scanner.TokenIdent:" + token.Value)
 
@@ -158,7 +159,13 @@ func Parse(input string) *CSSStyleSheet {
 			println("scanner.TokenDimension:" + token.Value)
 			fallthrough
 		case scanner.TokenHash:
-			println("scanner.TokenHash:" + token.Value)
+			if context.State == STATE_NONE || context.State == STATE_SELECTOR {
+
+				context.State = STATE_SELECTOR
+				context.NowSelectorText += strings.Trim(token.Value, " ")
+				break
+			}
+
 			fallthrough
 		case scanner.TokenNumber:
 			println("scanner.TokenNumber:" + token.Value)
