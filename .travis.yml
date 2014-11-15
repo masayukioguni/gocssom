@@ -1,11 +1,20 @@
 language: go
 go:
-  - 1.0
-  - 1.1
   - 1.2
   - 1.3
+  - release
   - tip
+before_install:
+  - go get github.com/axw/gocov/gocov
+  - go get github.com/mattn/goveralls
+  - go get code.google.com/p/go.tools/cmd/cover
 matrix:
   allow_failures:
-    - go: 1.0
+    - go: 1.2
+    - go: 1.3
+    - go: release
     - go: tip
+
+script:
+ - go test -v ./...
+ - $HOME/gopath/bin/goveralls -repotoken bLpI4TAkG1HaGozQCjeuFAbssE0zkD3QZ
