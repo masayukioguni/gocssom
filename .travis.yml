@@ -17,4 +17,4 @@ matrix:
 
 script:
  - go test -v ./cssom
- - $HOME/gopath/bin/goveralls -repotoken bLpI4TAkG1HaGozQCjeuFAbssE0zkD3QZ
+ - $HOME/gopath/bin/goveralls -repotoken bLpI4TAkG1HaGozQCjeuFAbssE0zkD3QZ ./cssom
